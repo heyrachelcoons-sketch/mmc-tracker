@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Money Mom Club — My Progress Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F9F8F4;color:#1a1a1a;padding:24px 16px}
+.wrap{max-width:900px;margin:0 auto}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px}
+.greeting{font-size:20px;font-weight:500;color:#1a1a1a}
+.greeting span{color:#029CA2}
+.mmc-logo{font-size:12px;font-weight:500;color:#029CA2;letter-spacing:0.3px;margin-bottom:4px;text-transform:uppercase}
+.edit-btn{font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid #ddd;background:transparent;color:#888;cursor:pointer}
+.edit-btn:hover{background:#f0f0f0}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.5rem}
+.stat{background:#fff;border-radius:8px;padding:0.875rem 1rem;border:1px solid #e8e8e8}
+.stat-label{font-size:11px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px}
+.stat-val{font-size:22px;font-weight:500;color:#1a1a1a}
+.stat-sub{font-size:11px;color:#bbb;margin-top:2px}
+.tab-row{display:flex;gap:0;margin-bottom:1.5rem;border-bottom:1px solid #e8e8e8;overflow-x:auto}
+.tab{font-size:13px;padding:8px 16px;border:none;background:transparent;cursor:pointer;color:#888;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.active{color:#029CA2;border-bottom-color:#029CA2;font-weight:500}
+.tab:hover:not(.active){color:#555}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.section-title{font-size:12px;font-weight:500;color:#aaa;margin-bottom:14px;letter-spacing:0.5px;text-transform:uppercase}
+
+/* Courses */
+.course-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:1.5rem}
+.course-card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1rem;cursor:pointer;transition:border-color 0.15s;position:relative}
+.course-card:hover{border-color:#029CA2}
+.course-card.done{border-left:3px solid #029CA2;border-radius:0 12px 12px 0}
+.course-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px}
+.course-name{font-size:13px;font-weight:500;color:#1a1a1a;line-height:1.35}
+.course-month{font-size:10px;color:#aaa;margin-bottom:6px}
+.badge-pill{font-size:10px;padding:3px 8px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.pill-done{background:#E1F5EE;color:#085041}
+.pill-prog{background:#FAEEDA;color:#633806}
+.pill-todo{background:#f5f5f5;color:#999}
+.progress-bar{height:4px;background:#f0f0f0;border-radius:3px;overflow:hidden;margin-bottom:6px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
+.fill-teal{background:#029CA2}
+.fill-amber{background:#EF9F27}
+.course-meta{font-size:11px;color:#bbb}
+.lesson-list{margin-top:10px;border-top:1px solid #f5f5f5;padding-top:10px;display:none}
+.lesson-list.open{display:block}
+.lesson-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;color:#666;cursor:pointer;border-radius:4px;user-select:none}
+.lesson-item:hover{color:#1a1a1a}
+.check{width:16px;height:16px;border-radius:50%;border:1.5px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.check.ticked{background:#029CA2;border-color:#029CA2}
+.check svg{display:none}
+.check.ticked svg{display:block}
+.expand-hint{font-size:10px;color:#ccc;text-align:center;margin-top:8px}
+
+/* Finances */
+.fin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:1.5rem}
+.fin-card{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1rem}
+.fin-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.fin-label{font-size:12px;font-weight:500;color:#555}
+.fin-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.fin-amount{font-size:22px;font-weight:500;color:#1a1a1a;margin-bottom:3px}
+.fin-goal{font-size:11px;color:#bbb;margin-bottom:8px}
+.fin-input-row{display:flex;gap:6px;margin-top:6px}
+.fin-input-row input{flex:1;font-size:12px;padding:6px 8px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;min-width:0;outline:none}
+.fin-input-row input:focus{border-color:#029CA2}
+.fin-input-row button{font-size:11px;padding:6px 10px;border-radius:8px;border:1px solid #029CA2;background:transparent;color:#029CA2;cursor:pointer;white-space:nowrap;font-weight:500}
+.fin-input-row button:hover{background:#E1F5EE}
+.fin-note{font-size:10px;color:#bbb;margin-top:6px}
+
+/* Milestones */
+.milestone-section{margin-bottom:1.5rem}
+.milestone-group-title{font-size:11px;font-weight:500;color:#aaa;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;margin-top:1rem}
+.milestone-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f5f5f5}
+.milestone-row:last-child{border-bottom:none}
+.m-check{width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s}
+.m-check:hover{border-color:#029CA2}
+.m-check.done{background:#029CA2;border-color:#029CA2}
+.m-check svg{display:none}
+.m-check.done svg{display:block}
+.m-text{font-size:13px;color:#444;flex:1;line-height:1.4}
+.m-text.done{text-decoration:line-through;color:#bbb}
+.m-badge{font-size:10px;padding:3px 9px;border-radius:20px;background:#E1F5EE;color:#085041;white-space:nowrap;flex-shrink:0}
+
+/* Wins */
+.wins-box{background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.win-item{font-size:12px;color:#555;padding:7px 0;border-bottom:1px solid #f5f5f5;display:flex;align-items:flex-start;gap:8px}
+.win-item:last-child{border-bottom:none}
+.win-dot{width:6px;height:6px;border-radius:50%;background:#029CA2;flex-shrink:0;margin-top:4px}
+.win-date{font-size:10px;color:#ccc;flex-shrink:0;margin-top:2px}
+.add-win{display:flex;gap:6px;margin-top:12px}
+.add-win input{flex:1;font-size:12px;padding:7px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;outline:none}
+.add-win input:focus{border-color:#029CA2}
+.add-win button{font-size:12px;padding:7px 14px;border-radius:8px;border:none;background:#029CA2;color:#fff;cursor:pointer;font-weight:500;white-space:nowrap}
+.add-win button:hover{background:#027a80}
+.empty{font-size:12px;color:#ccc;font-style:italic;padding:8px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="top-bar">
+  <div>
+    <div class="mmc-logo">Money Mom Club</div>
+    <div class="greeting">Hey, <span id="name-display">Money Mom</span> — here's your progress</div>
+  </div>
+  <button class="edit-btn" onclick="editName()">Edit my name</button>
+</div>
+
+<div class="summary-grid">
+  <div class="stat"><div class="stat-label">Courses done</div><div class="stat-val" id="courses-done">0/8</div><div class="stat-sub">keep going!</div></div>
+  <div class="stat"><div class="stat-label">Lessons checked</div><div class="stat-val" id="lessons-done">0</div><div class="stat-sub">of <span id="lessons-total">0</span></div></div>
+  <div class="stat"><div class="stat-label">Grocery savings</div><div class="stat-val" id="stat-grocery">$0</div><div class="stat-sub">goal: $1,000</div></div>
+  <div class="stat"><div class="stat-label">Debt paid off</div><div class="stat-val" id="stat-debt">$0</div><div class="stat-sub">goal: $500</div></div>
+  <div class="stat"><div class="stat-label">Side hustle</div><div class="stat-val" id="stat-income">$0</div><div class="stat-sub">goal: $100</div></div>
+  <div class="stat"><div class="stat-label">Milestones</div><div class="stat-val" id="stat-milestones">0</div><div class="stat-sub">of 10 hit</div></div>
+</div>
+
+<div class="tab-row">
+  <button class="tab active" onclick="switchTab('courses',this)">Courses</button>
+  <button class="tab" onclick="switchTab('finances',this)">Finances</button>
+  <button class="tab" onclick="switchTab('milestones',this)">Milestones</button>
+  <button class="tab" onclick="switchTab('wins',this)">My wins</button>
+</div>
+
+<!-- COURSES TAB -->
+<div class="tab-panel active" id="tab-courses">
+  <div class="section-title">Tap a course to log your lessons</div>
+  <div class="course-grid" id="course-grid"></div>
+</div>
+
+<!-- FINANCES TAB -->
+<div class="tab-panel" id="tab-finances">
+  <div class="section-title">Log your financial results</div>
+  <div class="fin-grid" id="fin-grid"></div>
+</div>
+
+<!-- MILESTONES TAB -->
+<div class="tab-panel" id="tab-milestones">
+  <div class="section-title">Tap a milestone to mark it complete</div>
+  <div class="milestone-section" id="milestone-list"></div>
+</div>
+
+<!-- WINS TAB -->
+<div class="tab-panel" id="tab-wins">
+  <div class="wins-box">
+    <div class="section-title" style="margin-bottom:10px">Your personal wins log</div>
+    <div id="wins-list"></div>
+    <div class="add-win">
+      <input type="text" id="win-input" placeholder="e.g. Saved $47 this week at the grocery store!" maxlength="140"/>
+      <button onclick="addWin()">+ Add win</button>
+    </div>
+  </div>
+  <p style="font-size:11px;color:#bbb;padding:4px 0">Tip: Screenshot your wins and share them in the Facebook community!</p>
+</div>
+
+</div>
+
+<script>
+const COURSES = [
+  {
+    id:'gbb', name:'Grocery Budget Bootcamp', month:'Month 1',
+    color:'#029CA2',
+    lessons:['Why grocery budgets fail','The shop the shelf method','Building your master grocery list','Meal planning basics','Price matching & coupons','Stockpiling smartly','Weekly grocery reset routine']
+  },
+  {
+    id:'budgeting', name:'Foundations of Budgeting For Families', month:'Months 2–3',
+    color:'#F2AFB2',
+    lessons:['Where your money is going','Zero-based budgeting explained','Creating your family budget','Tracking every dollar','Sinking funds & saving categories','Adjusting your budget monthly','Budgeting with your partner']
+  },
+  {
+    id:'mindset', name:'Money Mindset', month:'Months 2–3',
+    color:'#6CD8D0',
+    lessons:['Your money story','Scarcity vs abundance mindset','Identifying limiting beliefs','Emotional spending triggers','Building new money habits','Giving freely without guilt','Stepping into financial confidence']
+  },
+  {
+    id:'debt', name:'Pay Off Debt', month:'Month 3',
+    color:'#E8A87C',
+    lessons:['Understanding your debt','Debt snowball vs avalanche','Creating your debt payoff plan','Staying motivated on the journey','Celebrating debt milestones']
+  },
+  {
+    id:'hustles', name:'Side Hustles', month:'Month 4',
+    color:'#EF9F27',
+    lessons:['Finding your skill set','Top side hustles for busy moms','Setting your first income goal','Getting your first client or sale','Managing time with a family','Scaling without burning out']
+  },
+  {
+    id:'investing', name:'Investing', month:'Month 5',
+    color:'#029CA2',
+    lessons:['Why investing matters','Types of investment accounts','Making your first contribution','Setting up automatic investing','Sinking funds for big goals','Long-term wealth building basics']
+  },
+  {
+    id:'mealplans', name:'Meal Plans', month:'Ongoing',
+    color:'#9FE1CB',
+    lessons:['How to use the meal plans','2-week meal plan walkthrough','Adapting meals for your family','Batch cooking basics','Reducing food waste']
+  },
+  {
+    id:'livecalls', name:'Live Calls', month:'Ongoing',
+    color:'#888',
+    lessons:['How to join live calls','Submitting questions in advance','Finding call replays','Getting the most from coaching calls']
+  }
+];
+
+const MILESTONE_GROUPS = [
+  {
+    label:'Month 1 — Grocery savings',
+    items:[
+      {id:'m1', text:'Completed the 7-Day Shop the Shelf Challenge', badge:'First Saver'},
+      {id:'m2', text:'Saved first $500 on groceries', badge:'Halfway there!'},
+      {id:'m3', text:'Saved first $1,000 on groceries', badge:'Grocery Grad'},
+    ]
+  },
+  {
+    label:'Months 2–3 — Budgeting & mindset',
+    items:[
+      {id:'m4', text:'Built my family budget', badge:'Budget Boss'},
+      {id:'m5', text:'Paid off first $500 in debt', badge:'Debt Slayer'},
+      {id:'m6', text:'Completed the Money Mindset course', badge:'Mindset Shift'},
+      {id:'m7', text:'Gave freely without guilt for the first time', badge:'Abundance unlock'},
+    ]
+  },
+  {
+    label:'Month 4 — Income',
+    items:[
+      {id:'m8', text:'Chose a side hustle and took first action', badge:'Side Hustler'},
+      {id:'m9', text:'Made my first $100 from a side hustle', badge:'First $100'},
+    ]
+  },
+  {
+    label:'Month 5+ — Wealth building',
+    items:[
+      {id:'m10', text:'Made my first investment', badge:'Wealth Builder'},
+    ]
+  }
+];
+
+const FIN_FIELDS = [
+  {id:'grocery', label:'Grocery savings', icon:'🛒', bg:'#E1F5EE', goal:1000, suffix:'saved'},
+  {id:'debt', label:'Debt paid off', icon:'💳', bg:'#FBEAF0', goal:500, suffix:'paid off'},
+  {id:'income', label:'Side hustle income', icon:'💡', bg:'#FEF3E2', goal:100, suffix:'earned'},
+  {id:'invested', label:'Amount invested', icon:'📈', bg:'#E6F1FB', goal:500, suffix:'invested'},
+  {id:'mealbudget', label:'Meal plan savings', icon:'🥗', bg:'#EAF3DE', goal:200, suffix:'saved on meals'},
+];
+
+let state = JSON.parse(localStorage.getItem('mmc_tracker_v2') || 'null') || {
+  name:'Money Mom',
+  lessons:{},
+  milestones:{},
+  finances:{grocery:0,debt:0,income:0,invested:0,mealbudget:0},
+  wins:[]
+};
+
+function save(){try{localStorage.setItem('mmc_tracker_v2',JSON.stringify(state))}catch(e){}}
+
+function editName(){
+  const n = prompt('What should we call you?', state.name);
+  if(n && n.trim()){state.name=n.trim();save();document.getElementById('name-display').textContent=state.name;}
+}
+
+function switchTab(id, btn){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleLesson(courseId, lessonIdx, e){
+  e.stopPropagation();
+  const key=courseId+'_'+lessonIdx;
+  state.lessons[key]=!state.lessons[key];
+  save();renderAll();
+}
+
+function toggleMilestone(id){
+  state.milestones[id]=!state.milestones[id];
+  save();renderAll();
+}
+
+function updateFinance(id){
+  const val=parseFloat(document.getElementById('fin-inp-'+id).value);
+  if(isNaN(val)||val<0)return;
+  state.finances[id]=Math.round(val*100)/100;
+  document.getElementById('fin-inp-'+id).value='';
+  save();renderAll();
+}
+
+function addWin(){
+  const inp=document.getElementById('win-input');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  state.wins.unshift({text:txt,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});
+  if(state.wins.length>30)state.wins=state.wins.slice(0,30);
+  inp.value='';save();renderAll();
+}
+
+function checkSvg(color){
+  return `<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7.5L8 2.5" stroke="${color||'white'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function renderCourses(){
+  const grid=document.getElementById('course-grid');
+  const openIds=Array.from(grid.querySelectorAll('.lesson-list.open')).map(el=>el.dataset.course);
+  grid.innerHTML='';
+  COURSES.forEach(c=>{
+    const total=c.lessons.length;
+    const done=c.lessons.filter((_,i)=>state.lessons[c.id+'_'+i]).length;
+    const pct=Math.round((done/total)*100);
+    const isOpen=openIds.includes(c.id);
+    const pillLabel=done===total?'Complete':done>0?`${done}/${total} done`:'Not started';
+    const pillClass=done===total?'pill-done':done>0?'pill-prog':'pill-todo';
+    const fillClass=done===total?'fill-teal':'fill-amber';
+    const card=document.createElement('div');
+    card.className='course-card'+(done===total?' done':'');
+    card.innerHTML=`
+      <div class="course-header">
+        <div>
+          <div class="course-month">${c.month}</div>
+          <div class="course-name">${c.name}</div>
+        </div>
+        <span class="badge-pill ${pillClass}">${pillLabel}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+      <div class="course-meta">${pct}% complete · ${total} lessons</div>
+      <div class="lesson-list${isOpen?' open':''}" data-course="${c.id}">
+        ${c.lessons.map((l,i)=>`
+          <div class="lesson-item" onclick="toggleLesson('${c.id}',${i},event)">
+            <div class="check${state.lessons[c.id+'_'+i]?' ticked':''}">${state.lessons[c.id+'_'+i]?checkSvg('white'):''}</div>
+            ${l}
+          </div>`).join('')}
+      </div>
+      <div class="expand-hint">${isOpen?'tap to collapse':'tap to see lessons'}</div>`;
+    card.addEventListener('click',()=>{
+      const ll=card.querySelector('.lesson-list');
+      const hint=card.querySelector('.expand-hint');
+      const open=ll.classList.toggle('open');
+      hint.textContent=open?'tap to collapse':'tap to see lessons';
+    });
+    grid.appendChild(card);
+  });
+}
+
+function renderFinances(){
+  const grid=document.getElementById('fin-grid');
+  grid.innerHTML='';
+  FIN_FIELDS.forEach(f=>{
+    const val=state.finances[f.id]||0;
+    const pct=Math.min(100,Math.round((val/f.goal)*100));
+    const card=document.createElement('div');
+    card.className='fin-card';
+    card.innerHTML=`
+      <div class="fin-top">
+        <div class="fin-label">${f.label}</div>
+        <div class="fin-icon" style="background:${f.bg}">${f.icon}</div>
+      </div>
+      <div class="fin-amount">$${val.toLocaleString()}</div>
+      <div class="fin-goal">Goal: $${f.goal.toLocaleString()} ${f.suffix}</div>
+      <div class="progress-bar"><div class="progress-fill fill-teal" style="width:${pct}%"></div></div>
+      <div class="fin-input-row">
+        <input type="number" id="fin-inp-${f.id}" placeholder="Enter amount" min="0"/>
+        <button onclick="updateFinance('${f.id}')">Update</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderMilestones(){
+  const list=document.getElementById('milestone-list');
+  list.innerHTML='';
+  MILESTONE_GROUPS.forEach(group=>{
+    const title=document.createElement('div');
+    title.className='milestone-group-title';
+    title.textContent=group.label;
+    list.appendChild(title);
+    const box=document.createElement('div');
+    box.style.background='#fff';
+    box.style.border='1px solid #e8e8e8';
+    box.style.borderRadius='12px';
+    box.style.padding='0 1rem';
+    box.style.marginBottom='10px';
+    group.items.forEach(m=>{
+      const done=!!state.milestones[m.id];
+      const row=document.createElement('div');
+      row.className='milestone-row';
+      row.innerHTML=`
+        <div class="m-check${done?' done':''}" onclick="toggleMilestone('${m.id}')">${done?checkSvg('white'):''}</div>
+        <div class="m-text${done?' done':''}">${m.text}</div>
+        <div class="m-badge">${m.badge}</div>`;
+      box.appendChild(row);
+    });
+    list.appendChild(box);
+  });
+}
+
+function renderWins(){
+  const list=document.getElementById('wins-list');
+  if(!state.wins.length){list.innerHTML='<div class="empty">No wins yet — add your first one below! Every dollar counts.</div>';return;}
+  list.innerHTML=state.wins.map(w=>`
+    <div class="win-item">
+      <div class="win-dot"></div>
+      <span style="flex:1">${w.text}</span>
+      <span class="win-date">${w.date}</span>
+    </div>`).join('');
+}
+
+function updateSummary(){
+  const totalLessons=COURSES.reduce((a,c)=>a+c.lessons.length,0);
+  const doneLessons=Object.values(state.lessons).filter(Boolean).length;
+  const doneCourses=COURSES.filter(c=>c.lessons.every((_,i)=>state.lessons[c.id+'_'+i])).length;
+  const allMilestones=MILESTONE_GROUPS.flatMap(g=>g.items);
+  const doneMilestones=allMilestones.filter(m=>state.milestones[m.id]).length;
+  document.getElementById('courses-done').textContent=`${doneCourses}/8`;
+  document.getElementById('lessons-done').textContent=doneLessons;
+  document.getElementById('lessons-total').textContent=totalLessons;
+  document.getElementById('stat-grocery').textContent='$'+Math.round(state.finances.grocery||0).toLocaleString();
+  document.getElementById('stat-debt').textContent='$'+Math.round(state.finances.debt||0).toLocaleString();
+  document.getElementById('stat-income').textContent='$'+Math.round(state.finances.income||0).toLocaleString();
+  document.getElementById('stat-milestones').textContent=doneMilestones;
+  document.getElementById('name-display').textContent=state.name;
+}
+
+function renderAll(){updateSummary();renderCourses();renderFinances();renderMilestones();renderWins();}
+renderAll();
+</script>
+</body>
+</html>
